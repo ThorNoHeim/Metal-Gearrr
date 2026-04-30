@@ -9,44 +9,60 @@
 // Sets default values
 ATargetCrystal::ATargetCrystal()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
-
 }
 
 // Called when the game starts or when spawned
 void ATargetCrystal::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	// When Crystal takes any damage
 	OnTakeAnyDamage.AddDynamic(this, &ATargetCrystal::OnAnyDamage);
-	
 }
 
-void ATargetCrystal::OnAnyDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser)
+void ATargetCrystal::OnAnyDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
+                                 AController* InstigatedBy, AActor* DamageCauser)
 {
-	if (InstigatedBy && InstigatedBy->IsPlayerController())
+	// If damaged by the player
+	if (!InstigatedBy || !InstigatedBy->IsPlayerController())
+		return;
+
+	// Get spawn location
+	const FTransform Transform = FTransform(GetActorLocation());
+
+	// If spawned
+	if (const AGeometryCollectionActor* GeoActor = GetWorld()->SpawnActor<AGeometryCollectionActor>(
+		AGeometryCollectionActor::StaticClass(), Transform))
 	{
-		const FTransform Transform = FTransform(GetActorLocation());
-		
-		if (const AGeometryCollectionActor* GeoActor = GetWorld()->SpawnActor<AGeometryCollectionActor>(AGeometryCollectionActor::StaticClass(), Transform))
-		{	
-			UGeometryCollectionComponent* GeoCollection = GeoActor->GetGeometryCollectionComponent();
-			
+		// if GeometryCollectionComponent exists
+		if (UGeometryCollectionComponent* GeoCollection = GeoActor->GetGeometryCollectionComponent())
+		{
+			// Set destroyed pieces collision to ignore
 			GeoCollection->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
-			GeoCollection->SetCollisionResponseToChannel(ECollisionChannel::ECC_PhysicsBody, ECollisionResponse::ECR_Ignore);
-			GeoCollection->SetCollisionResponseToChannel(ECollisionChannel::ECC_Vehicle, ECollisionResponse::ECR_Ignore);
+			GeoCollection->SetCollisionResponseToChannel(ECollisionChannel::ECC_PhysicsBody,
+			                                             ECollisionResponse::ECR_Ignore);
+			GeoCollection->
+				SetCollisionResponseToChannel(ECollisionChannel::ECC_Vehicle, ECollisionResponse::ECR_Ignore);
 			GeoCollection->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
-			
+
+			// Set the collection
 			GeoCollection->SetRestCollection(GeometryCollection);
-			
+
+			// Crumble the collection
 			GeoCollection->CrumbleActiveClusters();
 			GeoCollection->AddRadialImpulse(GetActorLocation(), 200.f, 600.f, RIF_Linear, true);
-			
 		}
-		
-		Destroy();
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("ATargetCrystal: GeoActor has no GeometryCollectionComponent"));
+		}
 	}
-	
-}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("ATargetCrystal: Failed to spawn GeoActor"));
+	}
 
+	Destroy();
+}
