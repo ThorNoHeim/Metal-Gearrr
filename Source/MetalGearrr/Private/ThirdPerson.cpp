@@ -4,6 +4,7 @@
 #include "ThirdPerson.h"
 
 #include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystemInterface.h"
 #include "EnhancedInputSubsystems.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
@@ -24,6 +25,29 @@ AThirdPerson::AThirdPerson()
 void AThirdPerson::BeginPlay()
 {
 	Super::BeginPlay();
+
+
+		//if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+		//{
+			//if (ULocalPlayer* LocalPlayer = PlayerController->GetLocalPlayer())
+			//{
+				//if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer:: GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LocalPlayer))
+				//{
+					//Subsystem->AddMappingContext(UInputMappingContext, 0);
+				//}
+			//}
+		//}
+	
+
+
+	//if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+	{
+		//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AThirdPerson::PLayerJump);
+		//EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AThirdPerson::playerMove);
+		//EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AThirdPerson::PLayerLook);
+		
+	}//
+	
 
 	if (!CameraBoomRef)
 	{

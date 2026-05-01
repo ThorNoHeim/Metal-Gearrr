@@ -19,9 +19,16 @@ class AThirdPerson : public ACharacter
 public:
 	// Sets default values for this character's properties
 	AThirdPerson();
+	
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	/*
+	 * Controller
+	 */
+
+	
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
