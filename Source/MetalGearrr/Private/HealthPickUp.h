@@ -11,17 +11,15 @@ UCLASS()
 class AHealthPickUp : public ABasePickUp
 {
 	GENERATED_BODY()
-
-public:
+	
+public:	
 	// Sets default values for this actor's properties
 	AHealthPickUp();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	virtual void BindEvent() override;
-	virtual void UnbindEvent() override;
-
+	
 	virtual void TryPickUp() override;
+
 };

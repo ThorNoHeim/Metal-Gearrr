@@ -3,6 +3,7 @@
 
 #include "BasePickUp.h"
 
+#include "PropertyAccess.h"
 #include "ThirdPerson.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/Character.h"
@@ -10,16 +11,16 @@
 // Sets default values
 ABasePickUp::ABasePickUp()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+ 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
+	
 }
 
 // Called when the game starts or when spawned
 void ABasePickUp::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// Get collision sphere
+	
 	if (USphereComponent* FoundSphere = FindComponentByClass<USphereComponent>())
 	{
 		FoundSphere->OnComponentBeginOverlap.AddDynamic(this, &ABasePickUp::OnBeginOverlap);
@@ -27,57 +28,39 @@ void ABasePickUp::BeginPlay()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("ABasePickUp: Couldn't find a Sphere Component"));
+		UE_LOG(LogTemp, Error, TEXT("Couldn't find a Sphere Component"));
 	}
 }
 
-void ABasePickUp::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-                                 UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
-                                 const FHitResult& SweepResult)
+void ABasePickUp::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	// Ensure PlayerClassReference is set
-	if (!PlayerClassReference)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ABasePickUp: PlayerClassReference is NULL"));
-		return;
-	}
-
-	// If other actor is the player
 	if (OtherActor && PlayerClassReference)
 	{
-		if (OtherActor && OtherActor->IsA(PlayerClassReference))
+		if (bool bIsPlayer = OtherActor->IsA(PlayerClassReference))
 		{
 			OverlappingPlayer = Cast<AThirdPerson>(OtherActor);
-
-			// Attempt pickup immediately on overlap
+			
 			TryPickUp();
-
+			
 			if (OverlappingPlayer)
 			{
-				// Bind event so pick up can be retried while overlapping
-				BindEvent();
+				OverlappingPlayer->OnDamageTaken.AddUniqueDynamic(this, &ABasePickUp::TryPickUp);
 			}
 		}
 	}
-}
-
-void ABasePickUp::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-                               UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	// Only respond to the currently overlapping player leaving
-	if (OtherActor == OverlappingPlayer)
+	else if (!PlayerClassReference)
 	{
-		// Unbind event
-		UnbindEvent();
+		UE_LOG(LogTemp, Error, TEXT("ERROR: PlayerClassReference is NULL"));
 	}
 }
 
-void ABasePickUp::BindEvent()
+void ABasePickUp::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-}
-
-void ABasePickUp::UnbindEvent()
-{
+	if (OtherActor == OverlappingPlayer)
+	{
+		OverlappingPlayer->OnDamageTaken.RemoveDynamic(this, &ABasePickUp::TryPickUp);
+		OverlappingPlayer = nullptr;
+	}
 }
 
 void ABasePickUp::TryPickUp()
