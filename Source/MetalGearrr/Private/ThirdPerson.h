@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "ThirdPerson.generated.h"
 
+class UInputAction;
+class UInputMappingContext;
 // Event dispatchers
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDamageTaken);
 
@@ -26,12 +28,28 @@ public:
 
 	/*
 	 * Controller
-	 */
+	 
+	UPROPERTY(EditAnywhere)
+	UInputMappingContext* MappingContext;
 
+	UPROPERTY(EditAnywhere)
+	UInputAction* MoveAction;
+
+	UPROPERTY(EditAnywhere)
+	UInputAction* JumpAction;
+
+	UPROPERTY(EditAnywhere)
+	UInputAction* LookAction;
+
+	*/
 	
 
+	
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	// Flere Input actions
+	
 
 	// Blueprint variables
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
@@ -65,6 +83,16 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputAction* ShootAction;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UInputAction* MoveAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UInputAction* LookAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UInputAction* JumpAction;
+
 
 	// Camera assets
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CameraAssets")
@@ -128,4 +156,9 @@ private:
 	// Shoot
 	void StartShoot();
 	void ResetCooldown();
+
+	//Move And look
+	void Move(const struct FInputActionValue& Value);
+	void Look(const struct FInputActionValue& Value);
+
 };

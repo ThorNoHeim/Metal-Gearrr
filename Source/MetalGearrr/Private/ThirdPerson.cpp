@@ -27,26 +27,28 @@ void AThirdPerson::BeginPlay()
 	Super::BeginPlay();
 
 
-		//if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
-		//{
-			//if (ULocalPlayer* LocalPlayer = PlayerController->GetLocalPlayer())
-			//{
-				//if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer:: GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LocalPlayer))
-				//{
-					//Subsystem->AddMappingContext(UInputMappingContext, 0);
-				//}
-			//}
-		//}
-	
-
-
-	//if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
-	{
-		//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AThirdPerson::PLayerJump);
-		//EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AThirdPerson::playerMove);
-		//EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AThirdPerson::PLayerLook);
+		/*if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+		{
+			if (ULocalPlayer* LocalPlayer = PlayerController->GetLocalPlayer())
+			{
+				if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer:: GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LocalPlayer))
+				{
+					Subsystem->AddMappingContext(MappingContext, 0);
+					//if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+						
+							//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AThirdPerson::PlayerJump);
+							//EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AThirdPerson::PlayerMove);
+							//EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AThirdPerson::PLayerLook);
 		
-	}//
+						
+	
+					
+				}
+			}
+		}
+	
+	*/
+	//
 	
 
 	if (!CameraBoomRef)
@@ -64,7 +66,7 @@ void AThirdPerson::BeginPlay()
 	{
 		UE_LOG(LogTemp, Error, TEXT("AThirdPerson: Failed to get SnakeAnimInstance"));
 	}
-}
+	}
 
 // Called every frame
 void AThirdPerson::Tick(float DeltaTime)
@@ -91,6 +93,16 @@ void AThirdPerson::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 		// Shoot
 		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Triggered, this, &AThirdPerson::StartShoot);
+		// Move
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AThirdPerson::Move);
+
+		// Look
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AThirdPerson::Look);
+
+		// Jump
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+
 	}
 }
 
@@ -411,3 +423,33 @@ void AThirdPerson::ResetCooldown()
 {
 	bCanShoot = true;
 }
+
+//For movement
+void AThirdPerson::Move(const FInputActionValue& Value)
+{
+	FVector2D MovementVector = Value.Get<FVector2D>();
+	if (Controller != nullptr)
+	{
+		// Find direction based on where you look
+		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
+		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+		AddMovementInput(ForwardDirection, MovementVector.Y);
+		AddMovementInput(RightDirection, MovementVector.X);
+	}
+}
+
+//For Looking
+void AThirdPerson::Look(const FInputActionValue& Value)
+{
+	FVector2D LookAxisVector = Value.Get<FVector2D>();
+	if (Controller != nullptr)
+	{
+		AddControllerYawInput(LookAxisVector.X);
+		AddControllerPitchInput(LookAxisVector.Y);
+	}
+}
+
+
