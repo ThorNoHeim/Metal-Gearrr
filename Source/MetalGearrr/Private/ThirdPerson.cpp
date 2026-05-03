@@ -26,7 +26,7 @@ void AThirdPerson::BeginPlay()
 {
 	Super::BeginPlay();
 
-
+	//History of me creating a mapping context but abandoning it
 		/*if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 		{
 			if (ULocalPlayer* LocalPlayer = PlayerController->GetLocalPlayer())
@@ -103,7 +103,9 @@ void AThirdPerson::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
-	}
+		// Grenade
+		//EnhancedInputComponent->BindAction(HeldGrenadeAction, ETriggerEvent::Started, this, &ACharacter::GrenadeAction);
+	}	//EnhancedInputComponent->BindAction(HeldGrenadeAction, ETriggerEvent::Completed, this, &ACharacter::GrenadeActionEnd);
 }
 
 // Sneak
@@ -452,4 +454,6 @@ void AThirdPerson::Look(const FInputActionValue& Value)
 	}
 }
 
+
+ 
 

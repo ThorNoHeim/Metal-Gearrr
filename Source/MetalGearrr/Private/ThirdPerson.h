@@ -28,7 +28,7 @@ public:
 
 	/*
 	 * Controller
-	 
+	Here i tried additionally creating context for the mapping context 
 	UPROPERTY(EditAnywhere)
 	UInputMappingContext* MappingContext;
 
@@ -47,8 +47,7 @@ public:
 	
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	// Flere Input actions
+	
 	
 
 	// Blueprint variables
@@ -93,6 +92,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputAction* JumpAction;
 
+	/*
+	 *UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "Input")
+	 *UInputAction* GrenadeAction;
+	 *
+	 */
+
 
 	// Camera assets
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CameraAssets")
@@ -105,10 +110,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gun")
 	TSubclassOf<AActor> GunActor;
 
+	//Grenade
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade")
+	//TSubclassOf<AActor> BP_Grenade;
+	
 	// Animation
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimMontage* SnakeShootMontage;
 
+	// Grenade Animation
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade Animation")
+	//UAnimMontage* ThrowingMontage;
+	
 	// Niagara
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Niagara")
 	class UNiagaraSystem* NSTrail;
@@ -129,10 +142,16 @@ private:
 	UPROPERTY()
 	AActor* SpawnedGun;
 
+	//Grenade
+	
+	//AActor* HeldGrenade;
+
 	// Animation
 	UPROPERTY()
 	class USnakeAnimInstance* AnimInst;
 
+	// Where i put grenade relasenotify
+	
 	// Variables
 	FVector MuzzleLocation;
 	FTimerHandle TimerHandle_ShootCooldown;
@@ -160,5 +179,14 @@ private:
 	//Move And look
 	void Move(const struct FInputActionValue& Value);
 	void Look(const struct FInputActionValue& Value);
+
+	//Start of grenade action
+	//UFUNCTION()
+	//void OnGrenadePressed();
+
+	
+	//Continuation of Grenade process
+	//UFUNCTION(BlueprintCallable)
+	//void RelaseGrenade();
 
 };
