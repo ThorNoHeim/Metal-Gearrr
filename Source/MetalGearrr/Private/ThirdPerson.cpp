@@ -104,7 +104,7 @@ void AThirdPerson::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AThirdPerson:StopJumping);
 
 		// Grenade
-		//EnhancedInputComponent->BindAction(HeldGrenadeAction, ETriggerEvent::Started, this, &AThirdPerson::OnGrenadePressed);
+		EnhancedInputComponent->BindAction(HeldGrenadeAction, ETriggerEvent::Started, this, &AThirdPerson::OnGrenadePressed);
 	}	
 }
 
@@ -454,7 +454,7 @@ void AThirdPerson::Look(const FInputActionValue& Value)
 	}
 }
 
-/*void AThirdPerson::OnGrenadePressed()
+void AThirdPerson::OnGrenadePressed()
 {
 	
 	if (BP_Grenade && GrenadeDrop)
@@ -470,12 +470,12 @@ void AThirdPerson::Look(const FInputActionValue& Value)
 		SpawnParams.Owner = this;
 		SpawnParams.Instigator = GetInstigator();
 
-		// 4. Spawn granaten og lagre den i variabelen vi laget
+		
 		HeldGrenade = GetWorld()->SpawnActor<AActor>(BP_Grenade, SpawnLocation, SpawnRotation, SpawnParams);
 
 		if (HeldGrenade)
 		{
-			// 5. Fest den til hånden
+		
 			HeldGrenade->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, "LeftHandGrenadeSocket");
 		}
 	}
@@ -502,7 +502,7 @@ void AThirdPerson::ReleaseGrenade()
 		
 		HeldGrenade = nullptr;
 	}
-}*/
+}
 
 
  

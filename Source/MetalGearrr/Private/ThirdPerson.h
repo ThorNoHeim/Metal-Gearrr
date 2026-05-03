@@ -92,8 +92,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputAction* JumpAction;
 	
-	//UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "Input")
-	//UInputAction* HeldGrenadeAction;
+	UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "Input")
+	UInputAction* HeldGrenadeAction;
 	 
 
 
@@ -109,16 +109,16 @@ public:
 	TSubclassOf<AActor> GunActor;
 
 	//Grenade
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade")
-	//TSubclassOf<AActor> BP_Grenade;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade")
+	TSubclassOf<AActor> BP_Grenade;
 	
 	// Animation
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimMontage* SnakeShootMontage;
 
 	//Grenade Animation
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade Animation")
-	//UAnimMontage* GrenadeDrop;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade Animation")
+	UAnimMontage* GrenadeDrop;
 	
 	// Niagara
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Niagara")
@@ -127,11 +127,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Niagara")
 	UNiagaraSystem* NSImpact;
 
-	//UPROPERTY()
-	//AActor* HeldGrenade;
-
-	//UFUNCTION(BlueprintCallable)
-	//void ReleaseGrenade();
+	UPROPERTY()
+	AActor* HeldGrenade;
 
 
 protected:
@@ -143,8 +140,12 @@ protected:
 	virtual void OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
 
 	//Grenade
-	//UFUNCTION()
-	//void OnGrenadePressed();
+	UFUNCTION()
+	void OnGrenadePressed();
+
+	UFUNCTION(BlueprintCallable)
+	void ReleaseGrenade();
+
 
 private:
 	// Gun
