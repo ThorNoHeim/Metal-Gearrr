@@ -91,12 +91,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputAction* JumpAction;
-
-	/*
-	 *UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "Input")
-	 *UInputAction* GrenadeAction;
-	 *
-	 */
+	
+	//UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "Input")
+	//UInputAction* HeldGrenadeAction;
+	 
 
 
 	// Camera assets
@@ -118,9 +116,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimMontage* SnakeShootMontage;
 
-	// Grenade Animation
+	//Grenade Animation
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade Animation")
-	//UAnimMontage* ThrowingMontage;
+	//UAnimMontage* GrenadeDrop;
 	
 	// Niagara
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Niagara")
@@ -128,6 +126,13 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Niagara")
 	UNiagaraSystem* NSImpact;
+
+	//UPROPERTY()
+	//AActor* HeldGrenade;
+
+	//UFUNCTION(BlueprintCallable)
+	//void ReleaseGrenade();
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -137,14 +142,15 @@ protected:
 	virtual void OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
 	virtual void OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
 
+	//Grenade
+	//UFUNCTION()
+	//void OnGrenadePressed();
+
 private:
 	// Gun
 	UPROPERTY()
 	AActor* SpawnedGun;
-
-	//Grenade
 	
-	//AActor* HeldGrenade;
 
 	// Animation
 	UPROPERTY()
@@ -179,14 +185,7 @@ private:
 	//Move And look
 	void Move(const struct FInputActionValue& Value);
 	void Look(const struct FInputActionValue& Value);
-
-	//Start of grenade action
-	//UFUNCTION()
-	//void OnGrenadePressed();
-
 	
-	//Continuation of Grenade process
-	//UFUNCTION(BlueprintCallable)
-	//void RelaseGrenade();
+	
 
 };

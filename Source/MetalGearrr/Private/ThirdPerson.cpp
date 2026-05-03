@@ -100,12 +100,12 @@ void AThirdPerson::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AThirdPerson::Look);
 
 		// Jump
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AThirdPerson::Jump);
+		//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AThirdPerson:StopJumping);
 
 		// Grenade
-		//EnhancedInputComponent->BindAction(HeldGrenadeAction, ETriggerEvent::Started, this, &ACharacter::GrenadeAction);
-	}	//EnhancedInputComponent->BindAction(HeldGrenadeAction, ETriggerEvent::Completed, this, &ACharacter::GrenadeActionEnd);
+		//EnhancedInputComponent->BindAction(HeldGrenadeAction, ETriggerEvent::Started, this, &AThirdPerson::OnGrenadePressed);
+	}	
 }
 
 // Sneak
@@ -453,6 +453,56 @@ void AThirdPerson::Look(const FInputActionValue& Value)
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
 }
+
+/*void AThirdPerson::OnGrenadePressed()
+{
+	
+	if (BP_Grenade && GrenadeDrop)
+	{
+	
+		PlayAnimMontage(GrenadeDrop);
+
+		
+		FVector SpawnLocation = GetMesh()->GetSocketLocation("LeftHandGrenadeSocket");
+		FRotator SpawnRotation = GetMesh()->GetSocketRotation("LeftHandGrenadeSocket");
+
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		SpawnParams.Instigator = GetInstigator();
+
+		// 4. Spawn granaten og lagre den i variabelen vi laget
+		HeldGrenade = GetWorld()->SpawnActor<AActor>(BP_Grenade, SpawnLocation, SpawnRotation, SpawnParams);
+
+		if (HeldGrenade)
+		{
+			// 5. Fest den til hånden
+			HeldGrenade->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, "LeftHandGrenadeSocket");
+		}
+	}
+}
+
+void AThirdPerson::ReleaseGrenade()
+{
+	if (HeldGrenade)
+	{
+		HeldGrenade->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		
+		UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(HeldGrenade->GetRootComponent());
+		if (RootComp)
+		{
+			RootComp->SetSimulatePhysics(true);
+			RootComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			
+			FVector LaunchDirection = GetControlRotation().Vector();
+			FVector Velocity = (LaunchDirection + FVector(0, 0, 0.2f)) * 1500.f; 
+            
+			RootComp->AddImpulse(Velocity, NAME_None, true);
+		}
+
+		
+		HeldGrenade = nullptr;
+	}
+}*/
 
 
  
