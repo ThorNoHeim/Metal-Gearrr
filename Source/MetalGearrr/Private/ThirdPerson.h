@@ -143,7 +143,8 @@ protected:
 	void OnGrenadePressed();
 
 	UFUNCTION(BlueprintCallable)
-	void ReleaseGrenade();
+	void ExecuteGrenadeThrow(); // Endret fra ReleaseGrenade
+
 
 private:
 	// Gun
