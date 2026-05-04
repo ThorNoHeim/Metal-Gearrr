@@ -21,18 +21,28 @@ void AAmmoPickUp::BeginPlay()
 	
 }
 
+void AAmmoPickUp::BindEvent()
+{
+	OverlappingPlayer->OnAmmoSpent.AddUniqueDynamic(this, &ABasePickUp::TryPickUp);
+}
+
+void AAmmoPickUp::UnbindEvent()
+{
+	OverlappingPlayer->OnAmmoSpent.RemoveDynamic(this, &ABasePickUp::TryPickUp);
+}
+
 void AAmmoPickUp::TryPickUp()
 {
-	if (OverlappingPlayer->CurrentAmmo + 1 <= OverlappingPlayer->MaxAmmo)
+	if (OverlappingPlayer->CurrentAmmo != OverlappingPlayer->MaxAmmo)
 	{
 		if (OverlappingPlayer) 
 		{
 			OverlappingPlayer->OnDamageTaken.RemoveDynamic(this, &ABasePickUp::TryPickUp);
 			
-			/*if (OverlappingPlayer->GetClass()->ImplementsInterface(UHealthChanged::StaticClass()))
+			if (OverlappingPlayer->GetClass()->ImplementsInterface(UAmmoChanged::StaticClass()))
 			{
-				IHealthChanged::Execute_HealthChange(OverlappingPlayer, 1);
-			}*/
+				IAmmoChanged::Execute_AmmoChange(OverlappingPlayer, 5);
+			}
 		
 			SetActorHiddenInGame(true);
 			SetActorEnableCollision(false);

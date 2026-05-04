@@ -3,9 +3,9 @@
 
 #include "ThirdPerson.h"
 
+#include "AmmoChanged.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystemInterface.h"
-#include "EnhancedInputSubsystems.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "SnakeAnimInstance.h"
@@ -27,29 +27,29 @@ void AThirdPerson::BeginPlay()
 	Super::BeginPlay();
 
 	//History of me creating a mapping context but abandoning it
-		/*if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	/*if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	{
+		if (ULocalPlayer* LocalPlayer = PlayerController->GetLocalPlayer())
 		{
-			if (ULocalPlayer* LocalPlayer = PlayerController->GetLocalPlayer())
+			if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer:: GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LocalPlayer))
 			{
-				if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer:: GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LocalPlayer))
-				{
-					Subsystem->AddMappingContext(MappingContext, 0);
-					//if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
-						
-							//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AThirdPerson::PlayerJump);
-							//EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AThirdPerson::PlayerMove);
-							//EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AThirdPerson::PLayerLook);
-		
-						
+				Subsystem->AddMappingContext(MappingContext, 0);
+				//if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+					
+						//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AThirdPerson::PlayerJump);
+						//EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AThirdPerson::PlayerMove);
+						//EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AThirdPerson::PLayerLook);
 	
 					
-				}
+
+				
 			}
 		}
-	
-	*/
+	}
+
+*/
 	//
-	
+
 
 	if (!CameraBoomRef)
 	{
@@ -66,7 +66,7 @@ void AThirdPerson::BeginPlay()
 	{
 		UE_LOG(LogTemp, Error, TEXT("AThirdPerson: Failed to get SnakeAnimInstance"));
 	}
-	}
+}
 
 // Called every frame
 void AThirdPerson::Tick(float DeltaTime)
@@ -74,6 +74,12 @@ void AThirdPerson::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	UpdateAimTick(DeltaTime);
+	
+	// Check for safety
+	if (SpawnedGun && !bIsAiming)
+	{
+		SpawnedGun->Destroy();
+	}
 }
 
 // Called to bind functionality to input
@@ -104,8 +110,9 @@ void AThirdPerson::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AThirdPerson:StopJumping);
 
 		// Grenade
-		EnhancedInputComponent->BindAction(HeldGrenadeAction, ETriggerEvent::Started, this, &AThirdPerson::OnGrenadePressed);
-	}	
+		EnhancedInputComponent->BindAction(HeldGrenadeAction, ETriggerEvent::Started, this,
+		                                   &AThirdPerson::OnGrenadePressed);
+	}
 }
 
 // Sneak
@@ -330,7 +337,7 @@ void AThirdPerson::StartShoot()
 		return;
 	}
 
-	if (bIsAiming && bCanShoot)
+	if (bIsAiming && bCanShoot && CurrentAmmo > 0)
 	{
 		bCanShoot = false;
 
@@ -409,6 +416,20 @@ void AThirdPerson::StartShoot()
 				}
 			}
 
+			IAmmoChanged::Execute_AmmoChange(this, -1);
+
+			OnAmmoSpent.Broadcast();
+			
+			// Play sound
+			if (GunFire)
+			{
+				UGameplayStatics::PlaySoundAtLocation(
+					this,
+					GunFire,
+					GetActorLocation()
+				);
+			}
+
 			// Start shoot cooldown
 			GetWorldTimerManager().SetTimer(
 				TimerHandle_ShootCooldown,
@@ -456,13 +477,11 @@ void AThirdPerson::Look(const FInputActionValue& Value)
 
 void AThirdPerson::OnGrenadePressed()
 {
-	
 	if (BP_Grenade && GrenadeDrop)
 	{
-	
 		PlayAnimMontage(GrenadeDrop);
 
-		
+
 		FVector SpawnLocation = GetMesh()->GetSocketLocation("LeftHandGrenadeSocket");
 		FRotator SpawnRotation = GetMesh()->GetSocketRotation("LeftHandGrenadeSocket");
 
@@ -470,13 +489,13 @@ void AThirdPerson::OnGrenadePressed()
 		SpawnParams.Owner = this;
 		SpawnParams.Instigator = GetInstigator();
 
-		
+
 		HeldGrenade = GetWorld()->SpawnActor<AActor>(BP_Grenade, SpawnLocation, SpawnRotation, SpawnParams);
 
 		if (HeldGrenade)
 		{
-		
-			HeldGrenade->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, "LeftHandGrenadeSocket");
+			HeldGrenade->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale,
+			                               "LeftHandGrenadeSocket");
 		}
 	}
 }
@@ -486,24 +505,20 @@ void AThirdPerson::ReleaseGrenade()
 	if (HeldGrenade)
 	{
 		HeldGrenade->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-		
+
 		UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(HeldGrenade->GetRootComponent());
 		if (RootComp)
 		{
 			RootComp->SetSimulatePhysics(true);
 			RootComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-			
+
 			FVector LaunchDirection = GetControlRotation().Vector();
-			FVector Velocity = (LaunchDirection + FVector(0, 0, 0.2f)) * 1500.f; 
-            
+			FVector Velocity = (LaunchDirection + FVector(0, 0, 0.2f)) * 1500.f;
+
 			RootComp->AddImpulse(Velocity, NAME_None, true);
 		}
 
-		
+
 		HeldGrenade = nullptr;
 	}
 }
-
-
- 
-

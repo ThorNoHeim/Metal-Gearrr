@@ -3,8 +3,11 @@
 
 #include "TargetCrystal.h"
 
+#include "AmmoChanged.h"
+#include "TimerInterface.h"
 #include "GeometryCollection/GeometryCollectionActor.h"
 #include "GeometryCollection/GeometryCollectionComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ATargetCrystal::ATargetCrystal()
@@ -28,6 +31,28 @@ void ATargetCrystal::OnAnyDamage(AActor* DamagedActor, float Damage, const UDama
 	// If damaged by the player
 	if (!InstigatedBy || !InstigatedBy->IsPlayerController())
 		return;
+	
+	// Play sound
+	if (CrystalShatter)
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			this,
+			CrystalShatter,
+			GetActorLocation()
+		);
+	}
+	
+	// Add time
+	if (DamageCauser->GetClass()->ImplementsInterface(UTimerInterface::StaticClass()))
+	{
+		ITimerInterface::Execute_TimerChange(DamageCauser, -2);
+	}
+	
+	// Refund ammo
+	if (DamageCauser->GetClass()->ImplementsInterface(UAmmoChanged::StaticClass()))
+	{
+		IAmmoChanged::Execute_AmmoChange(DamageCauser, 1);
+	}
 
 	// Get spawn location
 	const FTransform Transform = FTransform(GetActorLocation());
