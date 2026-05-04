@@ -478,10 +478,9 @@ void AThirdPerson::Look(const FInputActionValue& Value)
 
 void AThirdPerson::OnGrenadePressed()
 {
-	if (BP_Grenade && GrenadeDrop)
+	if (BP_Grenade && GrenadeThrowMontage)
 	{
-		PlayAnimMontage(GrenadeDrop);
-
+		PlayAnimMontage(GrenadeThrowMontage);
 		FVector SpawnLocation = GetMesh()->GetSocketLocation("LeftHandGrenadeSocket");
 		FRotator SpawnRotation = GetMesh()->GetSocketRotation("LeftHandGrenadeSocket");
 		FActorSpawnParameters SpawnParams;

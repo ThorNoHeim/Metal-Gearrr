@@ -114,7 +114,7 @@ public:
 
 	//Grenade Animation
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade Animation")
-	UAnimMontage* GrenadeDrop;
+	UAnimMontage* GrenadeThrowMontage;
 
 	// Niagara
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Niagara")
