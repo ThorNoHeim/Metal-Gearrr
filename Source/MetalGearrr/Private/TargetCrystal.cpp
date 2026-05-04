@@ -30,8 +30,10 @@ void ATargetCrystal::OnAnyDamage(AActor* DamagedActor, float Damage, const UDama
 {
 	// If damaged by the player
 	if (!InstigatedBy || !InstigatedBy->IsPlayerController())
+	{
 		return;
-	
+	}
+
 	// Play sound
 	if (CrystalShatter)
 	{
@@ -41,13 +43,13 @@ void ATargetCrystal::OnAnyDamage(AActor* DamagedActor, float Damage, const UDama
 			GetActorLocation()
 		);
 	}
-	
+
 	// Add time
 	if (DamageCauser->GetClass()->ImplementsInterface(UTimerInterface::StaticClass()))
 	{
 		ITimerInterface::Execute_TimerChange(DamageCauser, -2);
 	}
-	
+
 	// Refund ammo
 	if (DamageCauser->GetClass()->ImplementsInterface(UAmmoChanged::StaticClass()))
 	{
@@ -65,12 +67,12 @@ void ATargetCrystal::OnAnyDamage(AActor* DamagedActor, float Damage, const UDama
 		if (UGeometryCollectionComponent* GeoCollection = GeoActor->GetGeometryCollectionComponent())
 		{
 			// Set destroyed pieces collision to ignore
-			GeoCollection->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
-			GeoCollection->SetCollisionResponseToChannel(ECollisionChannel::ECC_PhysicsBody,
-			                                             ECollisionResponse::ECR_Ignore);
+			GeoCollection->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+			GeoCollection->SetCollisionResponseToChannel(ECC_PhysicsBody,
+			                                             ECR_Ignore);
 			GeoCollection->
-				SetCollisionResponseToChannel(ECollisionChannel::ECC_Vehicle, ECollisionResponse::ECR_Ignore);
-			GeoCollection->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+				SetCollisionResponseToChannel(ECC_Vehicle, ECR_Ignore);
+			GeoCollection->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 
 			// Set the collection
 			GeoCollection->SetRestCollection(GeometryCollection);

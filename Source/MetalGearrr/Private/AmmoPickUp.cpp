@@ -9,16 +9,14 @@
 // Sets default values
 AAmmoPickUp::AAmmoPickUp()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
-
 }
 
 // Called when the game starts or when spawned
 void AAmmoPickUp::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void AAmmoPickUp::BindEvent()
@@ -35,18 +33,18 @@ void AAmmoPickUp::TryPickUp()
 {
 	if (OverlappingPlayer->CurrentAmmo != OverlappingPlayer->MaxAmmo)
 	{
-		if (OverlappingPlayer) 
+		if (OverlappingPlayer)
 		{
 			OverlappingPlayer->OnDamageTaken.RemoveDynamic(this, &ABasePickUp::TryPickUp);
-			
+
 			if (OverlappingPlayer->GetClass()->ImplementsInterface(UAmmoChanged::StaticClass()))
 			{
 				IAmmoChanged::Execute_AmmoChange(OverlappingPlayer, 5);
 			}
-		
+
 			SetActorHiddenInGame(true);
 			SetActorEnableCollision(false);
-		
+
 			SetLifeSpan(0.01f);
 		}
 	}

@@ -11,8 +11,8 @@ UCLASS()
 class AAmmoPickUp : public ABasePickUp
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	AAmmoPickUp();
 
@@ -24,5 +24,4 @@ protected:
 	virtual void UnbindEvent() override;
 
 	virtual void TryPickUp() override;
-
 };

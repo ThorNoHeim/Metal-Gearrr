@@ -21,5 +21,4 @@ class METALGEARRR_API IHealthChanged
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Health")
 	void HealthChange(int32 Amount);
-	
 };

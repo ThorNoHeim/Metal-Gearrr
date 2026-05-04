@@ -74,7 +74,7 @@ void AThirdPerson::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	UpdateAimTick(DeltaTime);
-	
+
 	// Check for safety
 	if (SpawnedGun && !bIsAiming)
 	{
@@ -419,7 +419,7 @@ void AThirdPerson::StartShoot()
 			IAmmoChanged::Execute_AmmoChange(this, -1);
 
 			OnAmmoSpent.Broadcast();
-			
+
 			// Play sound
 			if (GunFire)
 			{
@@ -491,17 +491,19 @@ void AThirdPerson::OnGrenadePressed()
 
 		if (HeldGrenade)
 		{
-			HeldGrenade->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, "LeftHandGrenadeSocket");
+			HeldGrenade->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale,
+			                               "LeftHandGrenadeSocket");
 
-			
-			float ThrowDelay = 2.0f; 
+
+			float ThrowDelay = 2.0f;
 			FTimerHandle ThrowTimerHandle;
-			GetWorldTimerManager().SetTimer(ThrowTimerHandle, this, &AThirdPerson::ExecuteGrenadeThrow, ThrowDelay, false);
+			GetWorldTimerManager().SetTimer(ThrowTimerHandle, this, &AThirdPerson::ExecuteGrenadeThrow, ThrowDelay,
+			                                false);
 		}
 	}
 }
 
-void AThirdPerson::ExecuteGrenadeThrow() 
+void AThirdPerson::ExecuteGrenadeThrow()
 {
 	if (HeldGrenade)
 	{
@@ -521,7 +523,6 @@ void AThirdPerson::ExecuteGrenadeThrow()
 		HeldGrenade = nullptr;
 	}
 }
-
 
 
 /*void AThirdPerson::OnGrenadePressed()
