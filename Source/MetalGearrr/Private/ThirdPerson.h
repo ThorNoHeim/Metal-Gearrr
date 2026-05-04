@@ -28,7 +28,7 @@ public:
 
 	/*
 	 * Controller
-	 
+	Here i tried additionally creating context for the mapping context 
 	UPROPERTY(EditAnywhere)
 	UInputMappingContext* MappingContext;
 
@@ -47,8 +47,7 @@ public:
 	
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	// Flere Input actions
+	
 	
 
 	// Blueprint variables
@@ -92,6 +91,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputAction* JumpAction;
+	
+	UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "Input")
+	UInputAction* HeldGrenadeAction;
+	 
 
 
 	// Camera assets
@@ -105,16 +108,28 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gun")
 	TSubclassOf<AActor> GunActor;
 
+	//Grenade
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade")
+	TSubclassOf<AActor> BP_Grenade;
+	
 	// Animation
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimMontage* SnakeShootMontage;
 
+	//Grenade Animation
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade Animation")
+	UAnimMontage* GrenadeDrop;
+	
 	// Niagara
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Niagara")
 	class UNiagaraSystem* NSTrail;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Niagara")
 	UNiagaraSystem* NSImpact;
+
+	UPROPERTY()
+	AActor* HeldGrenade;
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -124,15 +139,26 @@ protected:
 	virtual void OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
 	virtual void OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
 
+	//Grenade
+	UFUNCTION()
+	void OnGrenadePressed();
+
+	UFUNCTION(BlueprintCallable)
+	void ReleaseGrenade();
+
+
 private:
 	// Gun
 	UPROPERTY()
 	AActor* SpawnedGun;
+	
 
 	// Animation
 	UPROPERTY()
 	class USnakeAnimInstance* AnimInst;
 
+	// Where i put grenade relasenotify
+	
 	// Variables
 	FVector MuzzleLocation;
 	FTimerHandle TimerHandle_ShootCooldown;
@@ -160,5 +186,7 @@ private:
 	//Move And look
 	void Move(const struct FInputActionValue& Value);
 	void Look(const struct FInputActionValue& Value);
+	
+	
 
 };
