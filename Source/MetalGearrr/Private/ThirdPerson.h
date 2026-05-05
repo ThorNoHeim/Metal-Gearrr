@@ -46,7 +46,7 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+	
 
 	// Blueprint variables
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stats")
@@ -127,9 +127,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Niagara")
 	UNiagaraSystem* NSImpact;
 
-	UPROPERTY()
-	AActor* HeldGrenade;
+	
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	float GrenadeDamage = 100.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	float DamageRadius = 500.0f;
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -137,6 +142,9 @@ protected:
 	// Crouching
 	virtual void OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
 	virtual void OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
+
+	UPROPERTY()
+	class AActor* HeldGrenade;
 
 	//Grenade
 	UFUNCTION()

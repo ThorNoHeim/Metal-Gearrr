@@ -13,6 +13,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/PrimitiveComponent.h"
+#include "TimerManager.h"
+#include "Engine/World.h"
 
 // Sets default values
 AThirdPerson::AThirdPerson()
@@ -475,7 +478,7 @@ void AThirdPerson::Look(const FInputActionValue& Value)
 	}
 }
 
-
+/*
 void AThirdPerson::OnGrenadePressed()
 {
 	if (BP_Grenade && GrenadeThrowMontage)
@@ -523,7 +526,7 @@ void AThirdPerson::ExecuteGrenadeThrow()
 		HeldGrenade = nullptr;
 	}
 }
-
+*/
 
 /*void AThirdPerson::OnGrenadePressed()
 {
@@ -573,3 +576,107 @@ void AThirdPerson::ExecuteGrenadeThrow()
 	}
 }
 */
+
+
+void AThirdPerson::OnGrenadePressed()
+{
+	
+	if (BP_Grenade && GrenadeThrowMontage && !HeldGrenade)
+	{
+		PlayAnimMontage(GrenadeThrowMontage);
+
+		
+		FVector SpawnLocation = GetMesh()->GetSocketLocation("LeftHandGrenadeSocket");
+		FRotator SpawnRotation = GetMesh()->GetSocketRotation("LeftHandGrenadeSocket");
+		
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		SpawnParams.Instigator = GetInstigator();
+		
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+		HeldGrenade = GetWorld()->SpawnActor<AActor>(BP_Grenade, SpawnLocation, SpawnRotation, SpawnParams);
+
+		if (HeldGrenade)
+		{
+			UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(HeldGrenade->GetRootComponent());
+			if (RootComp)
+			{
+				
+				RootComp->SetSimulatePhysics(false);
+				RootComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			}
+
+		
+			HeldGrenade->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, "LeftHandGrenadeSocket");
+
+			
+			float ThrowDelay = 2.0f;
+			FTimerHandle ThrowTimerHandle;
+			GetWorldTimerManager().SetTimer(ThrowTimerHandle, this, &AThirdPerson::ExecuteGrenadeThrow, ThrowDelay, false);
+		}
+	}
+}
+
+void AThirdPerson::ExecuteGrenadeThrow()
+{
+	if (HeldGrenade)
+	{
+		
+		HeldGrenade->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
+		UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(HeldGrenade->GetRootComponent());
+		if (RootComp)
+		{
+			
+			RootComp->SetCollisionObjectType(ECC_WorldDynamic);
+
+			
+			RootComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			RootComp->SetCollisionResponseToAllChannels(ECR_Block);
+			RootComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore); 
+			
+			RootComp->SetSimulatePhysics(true);
+
+		
+			FVector LaunchDirection = GetControlRotation().Vector();
+			FVector Velocity = (LaunchDirection + FVector(0, 0, 0.2f)) * 1500.f;
+			
+			
+			RootComp->AddImpulse(Velocity, NAME_None, true);
+		}
+
+		
+		AActor* GrenadeToExplode = HeldGrenade;
+		FTimerHandle ExplodeTimerHandle;
+		
+		GetWorldTimerManager().SetTimer(ExplodeTimerHandle, [this, GrenadeToExplode]()
+		{
+			if (IsValid(GrenadeToExplode))
+			{
+				FVector ExplodeLoc = GrenadeToExplode->GetActorLocation();
+
+				
+				UGameplayStatics::ApplyRadialDamageWithFalloff(
+					GetWorld(),
+					GrenadeDamage,      
+					10.f,               
+					ExplodeLoc,
+					100.f,            
+					DamageRadius,       
+					1.f,                
+					UDamageType::StaticClass(),
+					TArray<AActor*>(), 
+					this, 
+					GetInstigatorController()
+				);
+
+				
+				GrenadeToExplode->Destroy();
+			}
+		}, 3.0f, false);
+
+		
+		HeldGrenade = nullptr;
+	}
+}
