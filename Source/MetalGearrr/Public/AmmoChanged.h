@@ -21,5 +21,4 @@ class METALGEARRR_API IAmmoChanged
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Ammo")
 	void AmmoChange(int32 Amount);
-	
 };

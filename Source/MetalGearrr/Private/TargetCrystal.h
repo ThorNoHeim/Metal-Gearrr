@@ -16,6 +16,10 @@ public:
 	// Sets default values for this actor's properties
 	ATargetCrystal();
 
+	// Sounds
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	USoundBase* CrystalShatter;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

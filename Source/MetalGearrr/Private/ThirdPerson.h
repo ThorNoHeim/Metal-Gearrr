@@ -21,7 +21,7 @@ class AThirdPerson : public ACharacter
 public:
 	// Sets default values for this character's properties
 	AThirdPerson();
-	
+
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -42,12 +42,10 @@ public:
 	UInputAction* LookAction;
 
 	*/
-	
 
-	
+
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-	
 	
 
 	// Blueprint variables
@@ -75,14 +73,14 @@ public:
 
 	// Input actions
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
-	class UInputAction* SneakAction;
+	UInputAction* SneakAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputAction* AimAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputAction* ShootAction;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputAction* MoveAction;
 
@@ -91,11 +89,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputAction* JumpAction;
-	
+
 	UPROPERTY(EditAnywhere, BluePrintReadOnly, Category = "Input")
 	UInputAction* HeldGrenadeAction;
-	 
-
 
 	// Camera assets
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CameraAssets")
@@ -111,26 +107,34 @@ public:
 	//Grenade
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade")
 	TSubclassOf<AActor> BP_Grenade;
-	
+
 	// Animation
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimMontage* SnakeShootMontage;
 
 	//Grenade Animation
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade Animation")
-	UAnimMontage* GrenadeDrop;
-	
+	UAnimMontage* GrenadeThrowMontage;
+
 	// Niagara
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Niagara")
 	class UNiagaraSystem* NSTrail;
 
+	// Sounds
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	USoundBase* GunFire;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Niagara")
 	UNiagaraSystem* NSImpact;
 
-	UPROPERTY()
-	AActor* HeldGrenade;
+	
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	float GrenadeDamage = 100.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	float DamageRadius = 500.0f;
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -139,26 +143,29 @@ protected:
 	virtual void OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
 	virtual void OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
 
+	UPROPERTY()
+	class AActor* HeldGrenade;
+
 	//Grenade
 	UFUNCTION()
 	void OnGrenadePressed();
 
 	UFUNCTION(BlueprintCallable)
-	void ReleaseGrenade();
+	void ExecuteGrenadeThrow(); // Endret fra ReleaseGrenade
 
 
 private:
 	// Gun
 	UPROPERTY()
 	AActor* SpawnedGun;
-	
+
 
 	// Animation
 	UPROPERTY()
 	class USnakeAnimInstance* AnimInst;
 
 	// Where i put grenade relasenotify
-	
+
 	// Variables
 	FVector MuzzleLocation;
 	FTimerHandle TimerHandle_ShootCooldown;
@@ -186,7 +193,4 @@ private:
 	//Move And look
 	void Move(const struct FInputActionValue& Value);
 	void Look(const struct FInputActionValue& Value);
-	
-	
-
 };

@@ -3,4 +3,4 @@
 #include "MetalGearrr.h"
 #include "Modules/ModuleManager.h"
 
-IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, MetalGearrr, "MetalGearrr" );
+IMPLEMENT_PRIMARY_GAME_MODULE(FDefaultGameModuleImpl, MetalGearrr, "MetalGearrr");

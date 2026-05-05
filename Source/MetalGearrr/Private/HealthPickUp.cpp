@@ -33,7 +33,9 @@ void AHealthPickUp::TryPickUp()
 {
 	// Ensure overlapping player is set
 	if (!OverlappingPlayer)
+	{
 		return;
+	}
 
 	// Only pick up if the player isn't already at max health
 	if (OverlappingPlayer->CurrentHealth + 1 <= OverlappingPlayer->MaxHealth)
