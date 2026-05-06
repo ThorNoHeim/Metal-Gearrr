@@ -4,6 +4,7 @@
 #include "TargetCrystal.h"
 
 #include "AmmoChanged.h"
+#include "DelayAction.h"
 #include "TimerInterface.h"
 #include "GeometryCollection/GeometryCollectionActor.h"
 #include "GeometryCollection/GeometryCollectionComponent.h"
@@ -53,7 +54,7 @@ void ATargetCrystal::OnAnyDamage(AActor* DamagedActor, float Damage, const UDama
 	// Refund ammo
 	if (DamageCauser->GetClass()->ImplementsInterface(UAmmoChanged::StaticClass()))
 	{
-		IAmmoChanged::Execute_AmmoChange(DamageCauser, 1);
+		IAmmoChanged::Execute_AmmoChange(DamageCauser, 2);
 	}
 
 	// Get spawn location
