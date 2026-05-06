@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Grenade.h"
 #include "GameFramework/Character.h"
 #include "ThirdPerson.generated.h"
 
@@ -107,10 +108,18 @@ public:
 	// Crosshair
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TSubclassOf<AActor> CrosshairActor;
-	
-	//Grenade
+
+	// Grenade C++
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade")
-	TSubclassOf<AActor> BP_Grenade;
+	TObjectPtr<AGrenade> Grenade;
+	
+	// BP_Grenade
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade")
+	TSubclassOf<AGrenade> BP_Grenade_CPP;
+
+	// The fake, visual-only grenade held during the animation
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UStaticMeshComponent* DummyGrenade;
 
 	// Animation
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
