@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Grenade.h"
 #include "GameFramework/Character.h"
 #include "ThirdPerson.generated.h"
 
@@ -103,10 +104,22 @@ public:
 	// Gun
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gun")
 	TSubclassOf<AActor> GunActor;
+	
+	// Crosshair
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<AActor> CrosshairActor;
 
-	//Grenade
+	// Grenade C++
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade")
-	TSubclassOf<AActor> BP_Grenade;
+	TObjectPtr<AGrenade> Grenade;
+	
+	// BP_Grenade
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grenade")
+	TSubclassOf<AGrenade> BP_Grenade_CPP;
+
+	// The fake, visual-only grenade held during the animation
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UStaticMeshComponent* DummyGrenade;
 
 	// Animation
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
@@ -163,6 +176,10 @@ private:
 	// Animation
 	UPROPERTY()
 	class USnakeAnimInstance* AnimInst;
+	
+	// Crosshair
+	UPROPERTY()
+	AActor* SpawnedCrosshair;
 
 	// Where i put grenade relasenotify
 
@@ -182,7 +199,7 @@ private:
 	void StopAim();
 	void UpdateAimSettings(bool bAiming, bool OrientRotation, bool UseYaw, bool DoCollision, float FStop,
 	                       int32 FocalDistance, int32 FarRegion);
-	void UpdateAimTick(float DeltaTime) const;
+	void UpdateAimTick(float DeltaTime);
 	void UpdateCamera(float DeltaTime, FVector CameraLocation, FVector SocketOffset, float ArmLength, float FieldOfView,
 	                  float LagSpeed) const;
 

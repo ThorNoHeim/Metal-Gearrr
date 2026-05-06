@@ -1,11 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "ThirdPerson.h"
-
 #include "AmmoChanged.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystemInterface.h"
+#include "Grenade.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "SnakeAnimInstance.h"
@@ -22,6 +21,12 @@ AThirdPerson::AThirdPerson()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	DummyGrenade = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("DummyGrenade"));
+	DummyGrenade->SetupAttachment(GetMesh(), TEXT("RightHand"));
+	DummyGrenade->SetCollisionProfileName(TEXT("NoCollision"));
+	DummyGrenade->SetGenerateOverlapEvents(false);
+	DummyGrenade->SetHiddenInGame(true);
 }
 
 // Called when the game starts or when spawned
@@ -42,9 +47,6 @@ void AThirdPerson::BeginPlay()
 						//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &AThirdPerson::PlayerJump);
 						//EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AThirdPerson::PlayerMove);
 						//EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AThirdPerson::PLayerLook);
-	
-					
-
 				
 			}
 		}
@@ -241,7 +243,7 @@ void AThirdPerson::UpdateAimSettings(bool bAiming, bool OrientRotation, bool Use
 	FollowCameraSettings.DepthOfFieldFarTransitionRegion = FarRegion;
 }
 
-void AThirdPerson::UpdateAimTick(float DeltaTime) const
+void AThirdPerson::UpdateAimTick(float DeltaTime)
 {
 	if (!AnimInst)
 	{
@@ -268,9 +270,68 @@ void AThirdPerson::UpdateAimTick(float DeltaTime) const
 			50.0f,
 			100.0f
 		);
+
+		// Crosshair
+		if (SpawnedGun)
+		{
+			if (const APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+			{
+				// Get center of the screen
+				int32 ViewportX;
+				int32 ViewportY;
+
+				PlayerController->GetViewportSize(ViewportX, ViewportY);
+
+				FVector WorldLocation;
+				FVector WorldDirection;
+
+				PlayerController->DeprojectScreenPositionToWorld(ViewportX / 2, ViewportY / 2, WorldLocation,
+				                                                 WorldDirection);
+
+				// Trace from screen center
+				FHitResult HitResultMiddle;
+				const bool bHitMiddle = GetWorld()->LineTraceSingleByChannel(
+					HitResultMiddle,
+					WorldLocation + (WorldDirection * 50),
+					WorldLocation + (WorldDirection * 10000),
+					ECC_Visibility
+				);
+
+				MuzzleLocation = SpawnedGun->FindComponentByClass<UMeshComponent>()->GetSocketLocation(TEXT("Muzzle"));
+				
+				// Trace from muzzle
+				FHitResult HitResultMuzzle;
+				bool bHit = GetWorld()->LineTraceSingleByChannel(
+					HitResultMuzzle,
+					MuzzleLocation,
+					HitResultMiddle.ImpactPoint - (HitResultMiddle.ImpactNormal * 10),
+					ECC_Visibility
+				);
+				
+				if (bHit)
+				{
+					if (!SpawnedCrosshair && CrosshairActor)
+					{
+						SpawnedCrosshair = GetWorld()->SpawnActor<AActor>(CrosshairActor);
+					}
+
+					if (SpawnedCrosshair)
+					{
+						SpawnedCrosshair->SetActorLocation(HitResultMuzzle.Location + (HitResultMuzzle.Normal * 5.0f));
+						SpawnedCrosshair->SetActorRotation(FollowCameraRef->GetComponentRotation());
+					}
+				}
+			}
+		}
 	}
 	else
 	{
+		if (SpawnedCrosshair)
+		{
+			SpawnedCrosshair->Destroy();
+			SpawnedCrosshair = nullptr;
+		}
+		
 		FVector TargetLocation = FVector::ZeroVector;
 		FVector SocketLocation = GetMesh()->GetSocketLocation("CameraDefault");
 
@@ -577,106 +638,120 @@ void AThirdPerson::ExecuteGrenadeThrow()
 }
 */
 
-
 void AThirdPerson::OnGrenadePressed()
 {
-	
-	if (BP_Grenade && GrenadeThrowMontage && !HeldGrenade)
+	if (BP_Grenade_CPP && GrenadeThrowMontage)
 	{
 		PlayAnimMontage(GrenadeThrowMontage);
 
+		// Unhide the dummy mesh attached to the hand
+		if (DummyGrenade)
+		{
+			DummyGrenade->SetHiddenInGame(false);
+		}
 		
-		FVector SpawnLocation = GetMesh()->GetSocketLocation("LeftHandGrenadeSocket");
-		FRotator SpawnRotation = GetMesh()->GetSocketRotation("LeftHandGrenadeSocket");
+		// Start the timer to execute the throw
+		float ThrowDelay = 2.0f;
+		FTimerHandle ThrowTimerHandle;
+		GetWorldTimerManager().SetTimer(ThrowTimerHandle, this, &AThirdPerson::ExecuteGrenadeThrow, ThrowDelay, false);
+		/*
+		FVector SpawnLocation = GetMesh()->GetSocketLocation("RightHand");
+		FRotator SpawnRotation = GetMesh()->GetSocketRotation("RightHand");
 		
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.Owner = this;
 		SpawnParams.Instigator = GetInstigator();
-		
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-		HeldGrenade = GetWorld()->SpawnActor<AActor>(BP_Grenade, SpawnLocation, SpawnRotation, SpawnParams);
+		HeldGrenade = GetWorld()->SpawnActor<AGrenade>(BP_Grenade_CPP, SpawnLocation, SpawnRotation, SpawnParams);
 
 		if (HeldGrenade)
 		{
-			UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(HeldGrenade->GetRootComponent());
-			if (RootComp)
+			UPrimitiveComponent* GrenadeRoot = Cast<UPrimitiveComponent>(HeldGrenade->GetRootComponent());
+			if (GrenadeRoot)
 			{
-				
-				RootComp->SetSimulatePhysics(false);
-				RootComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+				GrenadeRoot->SetSimulatePhysics(false);
+				GrenadeRoot->SetEnableGravity(false);
+
+				HeldGrenade->SetActorEnableCollision(false);
+				HeldGrenade->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale,"RightHand");
+
+				GrenadeRoot->SetRelativeLocation(FVector::ZeroVector);
+				GrenadeRoot->SetRelativeRotation(FRotator::ZeroRotator);
 			}
-
-		
-			HeldGrenade->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, "LeftHandGrenadeSocket");
-
 			
 			float ThrowDelay = 2.0f;
 			FTimerHandle ThrowTimerHandle;
-			GetWorldTimerManager().SetTimer(ThrowTimerHandle, this, &AThirdPerson::ExecuteGrenadeThrow, ThrowDelay, false);
+			GetWorldTimerManager().SetTimer(ThrowTimerHandle, this, &AThirdPerson::ExecuteGrenadeThrow, ThrowDelay,
+											false);
 		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Grenade NOT spawned!"));
+		}*/
 	}
 }
 
 void AThirdPerson::ExecuteGrenadeThrow()
 {
-	if (HeldGrenade)
+	// Unhide the dummy mesh attached to the hand
+	if (DummyGrenade)
 	{
-		
-		HeldGrenade->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-
-		UPrimitiveComponent* RootComp = Cast<UPrimitiveComponent>(HeldGrenade->GetRootComponent());
-		if (RootComp)
+		DummyGrenade->SetHiddenInGame(true);
+	}
+	
+	FVector SpawnLocation = GetMesh()->GetSocketLocation("RightHand");
+	FRotator SpawnRotation = GetMesh()->GetSocketRotation("RightHand");
+	
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = GetInstigator();
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	
+	if (AGrenade* SpawnedGrenade = GetWorld()->SpawnActor<AGrenade>(BP_Grenade_CPP, SpawnLocation, SpawnRotation, SpawnParams))
+	{
+		UPrimitiveComponent* GrenadeRoot = Cast<UPrimitiveComponent>(SpawnedGrenade->GetRootComponent());
+		if (GrenadeRoot)
 		{
-			
-			RootComp->SetCollisionObjectType(ECC_WorldDynamic);
+			GrenadeRoot->SetSimulatePhysics(true);
+			GrenadeRoot->SetEnableGravity(true);
+			GrenadeRoot->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
-			
-			RootComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-			RootComp->SetCollisionResponseToAllChannels(ECR_Block);
-			RootComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore); 
-			
-			RootComp->SetSimulatePhysics(true);
-
-		
 			FVector LaunchDirection = GetControlRotation().Vector();
 			FVector Velocity = (LaunchDirection + FVector(0, 0, 0.2f)) * 1500.f;
-			
-			
-			RootComp->AddImpulse(Velocity, NAME_None, true);
+
+			GrenadeRoot->AddImpulse(Velocity, NAME_None, true);
 		}
-
 		
-		AActor* GrenadeToExplode = HeldGrenade;
-		FTimerHandle ExplodeTimerHandle;
-		
-		GetWorldTimerManager().SetTimer(ExplodeTimerHandle, [this, GrenadeToExplode]()
-		{
-			if (IsValid(GrenadeToExplode))
-			{
-				FVector ExplodeLoc = GrenadeToExplode->GetActorLocation();
-
-				
-				UGameplayStatics::ApplyRadialDamageWithFalloff(
-					GetWorld(),
-					GrenadeDamage,      
-					10.f,               
-					ExplodeLoc,
-					100.f,            
-					DamageRadius,       
-					1.f,                
-					UDamageType::StaticClass(),
-					TArray<AActor*>(), 
-					this, 
-					GetInstigatorController()
-				);
-
-				
-				GrenadeToExplode->Destroy();
-			}
-		}, 3.0f, false);
-
-		
-		HeldGrenade = nullptr;
+		SpawnedGrenade->PrepareForExplosion();
 	}
+
+	/*
+	if (HeldGrenade)
+	{
+		HeldGrenade->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		
+		UPrimitiveComponent* GrenadeRoot = Cast<UPrimitiveComponent>(HeldGrenade->GetRootComponent());
+		if (GrenadeRoot)
+		{
+			HeldGrenade->SetActorEnableCollision(true);
+			
+			GrenadeRoot->SetEnableGravity(true);
+			GrenadeRoot->SetSimulatePhysics(true);
+
+			GrenadeRoot->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+			FVector LaunchDirection = GetControlRotation().Vector();
+			FVector Velocity = (LaunchDirection + FVector(0, 0, 0.2f)) * 1500.f;
+
+			GrenadeRoot->AddImpulse(Velocity, NAME_None, true);
+
+			AGrenade* GrenadeRef = Cast<AGrenade>(HeldGrenade);
+			if (GrenadeRef)
+			{
+				GrenadeRef->PrepareForExplosion();
+			}
+		}
+		HeldGrenade = nullptr;
+	} */
 }
